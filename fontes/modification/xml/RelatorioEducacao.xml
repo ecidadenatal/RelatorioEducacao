@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<modification>
+  <name>RelatorioEducacao</name>
+  <id>RelatorioEducacao</id>
+  <ecidade-version>2.3.50</ecidade-version>
+  
+  <file path='edu2_resumoaprovnovo002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$oDadosDis.*ResultadoFin.*\[0\].*\n.*\})]]></search>
+      <add>
+        <![CDATA[$1
+
+          if (verificaAlunoRecuperacao($oDadosAluno->iAluno, $oElementoResultadoFinal->getCodigoDiario())) {
+            $oDadosDisciplina->sResultadoFinal = 'Rec';
+          }]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(return.*\$aEstru.*Periodos.*\n\})]]></search>
+      <add>
+        <![CDATA[$1
+
+/**
+ * Verifica e retorna se o aluno está em recuperação na disciplina
+ * @param $iAluno
+ * @param $iCodigoDiario
+ * @return boolean
+ */
+function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
+  $sSqlRecuperacao = "select 1 from diarioresultadorecuperacao 
+                        inner join diarioresultado on ed116_diarioresultado = ed73_i_codigo
+                        inner join diario          on ed73_i_diario = ed95_i_codigo
+                      where ed95_i_aluno = {$iAluno} and ed73_i_diario = {$iCodigoDiario}";
+  $rsRecuperacao   = pg_query($sSqlRecuperacao);
+  if (pg_num_rows($rsRecuperacao) > 0) {
+    return true;
+  }
+  return false;
+}]]>
+      </add>
+    </operation>
+  </file>
+</modification>
