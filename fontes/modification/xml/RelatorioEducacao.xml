@@ -22,7 +22,7 @@
         <![CDATA[$1
 
 /**
- * Verifica e retorna se o aluno estÃ¡ em recuperaÃ§Ã£o na disciplina
+ * Verifica e retorna se o aluno está em recuperação na disciplina
  * @param $iAluno
  * @param $iCodigoDiario
  * @return boolean
@@ -41,4 +41,156 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       </add>
     </operation>
   </file>
+
+  <file path='forms/db_frmcalendario.php'>
+    <operation>
+      <search regex="true" flag="U"><![CDATA[(if.*ed52_d_resultfinal_ano((\n*.*\s*)*)else.*\{)((\n*.*\s*)*focus\(\);\n*\s*.*\})(\n*\s*.*\})]]></search>
+      <add><![CDATA[$4]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='edu1_calendario001.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmcalendario.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmcalendario.php"));]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='edu1_calendario002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmcalendario.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmcalendario.php"));]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='edu1_calendario003.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmcalendario.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmcalendario.php"));]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='model/educacao/relatorio/RelatorioHistoricoEscolarRetrato.model.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$.*escrever.*Disposicao2(.*\s*\n*)\})]]></search>
+      <add><![CDATA[$1
+    
+    $oDaoAluno = db_utils::getDao('aluno');
+    $sSqlAluno = $oDaoAluno->sql_query_file($this->oAluno->getCodigoAluno());
+    $rsAluno   = $oDaoAluno->sql_record($sSqlAluno);
+    if ($rsAluno && $oDaoAluno->numrows > 0 ) {
+      $oAluno = db_utils::fieldsMemory($rsAluno, 0);
+    }
+
+    $oDaoUF = db_utils::getDao('censouf');
+    $sSqlUF = $oDaoUF->sql_query($oAluno->ed47_i_censoufident);
+    $rsUF   = $oDaoUF->sql_record($sSqlUF);
+    if ($rsUF && $oAluno->ed47_i_censoufident && $oDaoUF->numrows > 0 ) {
+      $oUF = db_utils::fieldsMemory($rsUF, 0);
+    }
+    $oCartorio       = new CensoCartorio($oAluno->ed47_i_censocartorio);
+    $oOrgaoEmissorRG = new CensoOrgaoEmissorRG($oAluno->ed47_i_censoorgemissrg);
+    ]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true" flag="U"><![CDATA[(\$this.*\$this.*getCodigoAluno((\s*\n*.*)*)getCodigoInep.*;)]]></search>
+      <add><![CDATA[$this->oPdf->cell(95, $iAlturaLinha,  "{$this->oAluno->getCodigoAluno()} - {$this->oAluno->getNome()}", 0, 0, "L", 0);
+    $this->oPdf->setfont('arial', '', 6);
+    $this->oPdf->cell(15, $iAlturaLinha, "Nascido(a) em:", 0, 0, "L", 0);
+    $this->oPdf->cell(80, $iAlturaLinha, $sLocalNascimento, 0, 1, "L", 0 ); 
+
+    $this->oPdf->cell(15, $iAlturaLinha, "Filho(a) de:", 0, 0, "l", 0);
+    $this->oPdf->cell(95, $iAlturaLinha, $sFiliacao    , 0, 1, "L", 0);
+
+    $this->oPdf->cell(15, $iAlturaLinha, "Nacionalidade:", 0, 0, "L", 0);
+    $this->oPdf->cell(95, $iAlturaLinha, $aNacionalidade[$this->oAluno->getNacionalidade()], 0, 0, "L", 0);
+    $this->oPdf->cell(20, $iAlturaLinha, "Número do Termo:", 0, 0, "L", 0);
+    $this->oPdf->cell(15, $iAlturaLinha, $oAluno->ed47_c_certidaonum, 0, 0, "L", 0);
+    $this->oPdf->cell(8, $iAlturaLinha, "Folha:", 0, 0, "L", 0);
+    $this->oPdf->cell(10, $iAlturaLinha, $oAluno->ed47_c_certidaofolha, 0, 0, "L", 0);
+    $this->oPdf->cell(8, $iAlturaLinha, "Livro:", 0, 0, "L", 0);
+    $this->oPdf->cell(10, $iAlturaLinha, $oAluno->ed47_c_certidaolivro, 0, 1, "L", 0);
+
+    $this->oPdf->cell(12, $iAlturaLinha, "Identidade: ", 0, 0, "L", 0);
+    $this->oPdf->cell(20, $iAlturaLinha, $this->oAluno->getIdentidade(), 0, 0, "L", 0);
+    $this->oPdf->cell(5, $iAlturaLinha, "UF:", 0, 0, "L", 0);
+    $this->oPdf->cell(8, $iAlturaLinha, $oUF->ed260_c_sigla, 0, 0, "L", 0 );
+    $this->oPdf->cell(18, $iAlturaLinha, "Orgão Emissor: ", 0, 0, "L", 0);
+    $this->oPdf->cell(47, $iAlturaLinha, $oOrgaoEmissorRG->getNome(), 0, 0, "L",0);
+    $this->oPdf->cell(20, $iAlturaLinha, "Data de Emissão: ", 0, 0, "L", 0);
+    $this->oPdf->cell(30, $iAlturaLinha, date("d/m/Y", strtotime($oAluno->ed47_c_certidaodata)), 0, 1, "L", 0);
+
+    $this->oPdf->cell(15, $iAlturaLinha, "Nascido(a) em:", 0, 0, "L", 0);
+    $this->oPdf->cell(80, $iAlturaLinha, $sLocalNascimento, 0, 0, "L", 0 );
+    $this->oPdf->cell(12, $iAlturaLinha, "ID INEP: ", 0, 0, "L", 0);
+    $this->oPdf->cell(98,  $iAlturaLinha, $this->oAluno->getCodigoInep(), 0, 0, "L",0);
+    $this->oPdf->cell(20, $iAlturaLinha, "Cartório: ", 0, 0, "L", 0);
+    $this->oPdf->cell(80, $iAlturaLinha, $oCartorio->getNome(), 0, 1, "L", 0);]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iXInicial.*GetX.*;)]]></search>
+      <add><![CDATA[
+    $sAlinhamentoFreq = 'R';
+    if ($oDadosEtapa->sResultado == "TR") {
+      $oDadosEtapa->iCargaHoraria = "-";
+      $oDadosEtapa->nPercentualFalta = "-";
+      $oDadosEtapa->iDiasLetivos = "-";
+      $sAlinhamentoFreq = 'C';
+    }]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*\$aLargura.*percentual_frequencia.*'R'.*;)]]></search>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, $oDadosEtapa->nPercentualFalta, 0, 0, $sAlinhamentoFreq);]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*'percentual_frequencia'.*\$sAlinhamentoFreq.*;)]]></search>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, empty($oDadosEtapa->nPercentualFalta) ? '-' : $oDadosEtapa->nPercentualFalta, 0, 0, empty($oDadosEtapa->nPercentualFalta) ? 'C' : $sAlinhamentoFreq);]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='forms/db_frmturma.php'>
+    <operation>
+      <search regex="true"><![CDATA[(sHtml.*ed11_i_Codigo.*ed11_c_descr.*label.*;)]]></search>
+      <add><![CDATA[sHtml += '  <label for="etapa'+ i +'">'+ed11_c_descr.urlDecode()+'</label>';]]>
+      </add>
+    </operation>    
+  </file>
+  
+  <file path='edu1_turma001.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmturma.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmturma.php"));]]>
+      </add>
+    </operation>    
+  </file>
+   
+  <file path='edu1_turma002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmturma.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmturma.php"));]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='edu1_turma003.php'>
+    <operation>
+      <search regex="true"><![CDATA[(include.*frmturma.*;)]]></search>
+      <add><![CDATA[include(modification("forms/db_frmturma.php"));]]>
+      </add>
+    </operation>    
+  </file>
+
 </modification>
