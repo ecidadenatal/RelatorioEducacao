@@ -193,4 +193,15 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
     </operation>    
   </file>
 
+  <file path='edu2_ataresultadofinal002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$sDtEncerramento.*\$oDtEncerramento.*\s*\n*\})]]></search>
+      <add><![CDATA[$1
+        
+        $auxSituacao = ($aListaDeAlunos[$iContadorAluno]->getSituacao() != 'EVADIDO' ? $aListaDeAlunos[$iContadorAluno]->getSituacao() : "ABANDONO");
+  
+]]>
+      </add>
+    </operation>    
+  </file>
 </modification>
