@@ -2,11 +2,17 @@
 <manifest>
   <plugin name="RelatorioEducacao" label="Alterações nos Relatórios da Educação" plugin-version="1.0" ecidade-version="2.3.50" id-modulo="1100747">
    <id id="RelatorioEducacao"> </id>
-   <files>    
+   	<files>    
+	    <!-- outro -->
+	    <file name="RelatorioEducacao.xml"    path="/modification/xml/RelatorioEducacao.xml" />
+		
+		<!-- classe -->
+	    <file name="db_transferencialoteobservacao_classe.php"    path="/classes/db_transferencialoteobservacao_classe.php" />
 
-      <!-- outro -->
-      <file name="RelatorioEducacao.xml"    path="/modification/xml/RelatorioEducacao.xml" />
-
-   </files>
+	    <!-- dd -->
+	    <file name="transferencialoteobservacao.dd.xml"    path="/dd/tabelas/plugins.transferencialoteobservacao.dd.xml" />
+   	</files>
+   	<estrutura install="/instalacao.sql" uninstall="/desinstalacao.sql">
+    </estrutura>
   </plugin>
 </manifest>    

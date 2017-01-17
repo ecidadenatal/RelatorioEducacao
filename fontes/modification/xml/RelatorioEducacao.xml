@@ -204,4 +204,159 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       </add>
     </operation>    
   </file>
+
+  <file path='edu2_guiatransferenciaencerrados002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$aMatriculas.*getMatriculas.*)]]></search>
+      <add><![CDATA[$1
+
+  $oDadosRelatorio->oDataTransf = new DBDate(date_format(new DateTime($oTransferencia->getData()), "d/m/Y"));
+  $oDadosRelatorio->sDataTransf = $oDadosRelatorio->oDataTransf->dataPorExtenso();
+
+  $sObservacao = "";
+  $oDaoTransfLoteObservacao = db_utils::getDao('transferencialoteobservacao');
+  $rsTransfLoteObservacao   = $oDaoTransfLoteObservacao->sql_record($oDaoTransfLoteObservacao->sql_query(null, null, null, "transferencialote = $iTransferencia"));
+  if($oDaoTransfLoteObservacao->numrows > 0) {
+    $sObservacao = db_utils::fieldsMemory($rsTransfLoteObservacao, 0)->observacao;
+  }
+]]>
+      </add>
+    </operation>    
+    
+    <operation>
+      <search regex="true"><![CDATA[('sEnsino.*)]]></search>
+      <add><![CDATA['sEnsino', 'sDataTransferencia', 'sObservacao');]]>
+      </add>
+    </operation>  
+    
+    <operation>
+      <search regex="true"><![CDATA[(\$oPdf.*\$oDadosRelatorio.*sData.*)]]></search>
+      <add><![CDATA[  $oPdf->Cell( 192, 4, "{$sMunicipio}, {$oDadosRelatorio->sDataTransf}", 0, 1, 'C');]]>
+      </add>
+    </operation>  
+
+    <operation>
+      <search regex="true"><![CDATA[(\$oDados.*sObservacaoFixa.*\.=.*;)]]></search>
+      <add><![CDATA[$1
+    $oDados->sObservacaoFixa .= "\n$sObservacao";]]>
+      </add>
+    </operation>  
+
+  </file>
+
+  <file path='edu4_transferiralunoencerrado001.php'>
+    <operation>
+      <search regex="true"><![CDATA[(ctnGrid.*div\>\s*.*fieldset\>)]]></search>
+      <add><![CDATA[$1
+
+          <fieldset style="width:550px;">
+            <legend>Observação</legend>
+            <?php db_textarea('observacaoLote',6,90,"",true,'text',1,""); ?>
+          </fieldset>
+
+]]>
+      </add>
+    </operation>  
+
+    <operation>
+      <search regex="true" flag="U"><![CDATA[(id.*cboEmissor((\s*\n*.*)*)\<\/tr\>)]]></search>
+      <add><![CDATA[$1
+            <tr>
+              <td class="field-size2">
+                <label for="dataTransferencia">Data da transferência:</label>
+              </td>
+              <td>
+                <?php
+                  if (!isset($dtin_dia)) {
+                    $dtin_dia = date('d',db_getsession('DB_datausu'));
+                  }
+                  if (!isset($dtin_mes)) {
+                    $dtin_mes = date('m',db_getsession('DB_datausu'));
+                  }
+                  if (!isset($dtin_ano)) {
+                    $dtin_ano = date('Y',db_getsession('DB_datausu'));
+                  }
+                  db_inputdata('dataTransferencia',$dtin_dia,$dtin_mes,$dtin_ano,true,'text',1);
+              ?>
+              </td>
+            </tr>
+            ]]>
+      </add>
+    </operation>    
+    
+    <operation>
+      <search regex="true"><![CDATA[(oParametros.*iEscolaDestino.*)]]></search>
+      <add><![CDATA[$1
+  oParametros.sData          = $F('dataTransferencia');
+  oParametros.sObservacao    = $F('observacaoLote');
+]]>
+      </add>
+    </operation>   
+  </file>
+
+  <file path='edu4_transferiralunosencerrados.RPC.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\$oTransf.*new.*TransferenciaLote.*\(\).*)]]></search>
+      <add><![CDATA[
+      $sData = $oParam->sData;
+      $sObservacao = $oParam->sObservacao;
+
+      $1]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$oTransf.*setEscolaDestino.*)]]></search>
+      <add><![CDATA[$1
+      $oTransfLote->setData($sData);]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$oRetorno.*iTransferencia.*)]]></search>
+      <add><![CDATA[$1
+
+      $oDaoTransfLoteObservacao = db_utils::getDao("transferencialoteobservacao");
+      $oDaoTransfLoteObservacao->transferencialote = $oTransfLote->getCodigo();
+      $oDaoTransfLoteObservacao->observacao        = $sObservacao;
+      $oDaoTransfLoteObservacao->incluir(null);
+]]>
+      </add>
+    </operation>    
+  </file>
+
+  <file path='model/educacao/transferencia/TransferenciaLote.model.php'>
+    <operation>
+      <search regex="true"><![CDATA[(public.*salvar\(.*)]]></search>
+      <add><![CDATA[  /**
+   * Setter data da transferência
+   * @param date
+   */
+  public function setData ($Data) {
+    $this->sDateTime = $Data;
+  }
+
+  /**
+   * Getter data da transferência
+   */
+  public function getData () {
+    return $this->sDateTime;
+  }
+
+  $1]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$oDaoTransferencia.*ed137_data.*)]]></search>
+      <add><![CDATA[$oDaoTransferencia->ed137_data         = empty($this->sDateTime) ? date('Y-m-d H:i:s') : $this->sDateTime;]]>
+      </add>
+    </operation>   
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*sDateTime.*=.*Y-m-d.*)]]></search>
+      <add><![CDATA[//$this->sDateTime = date('Y-m-d H:i:s');]]>
+      </add>
+    </operation>   
+  </file>
 </modification>
