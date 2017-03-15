@@ -74,6 +74,14 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
     </operation>    
   </file>
 
+  <file path='model/educacao/relatorio/RelatorioHistoricoEscolar.model.php'>
+    <operation>
+      <search regex="true"><![CDATA[(if.*\$oEtapaCursada.*HistoricoEtapaRede.*\{(\n\s).*getPercentualFrequencia.*(\n\s).*\})]]></search>
+      <add><![CDATA[$oDadoEtapa->nPercentualFalta = $oEtapaCursada->getPercentualFrequencia();]]>
+      </add>
+    </operation>    
+  </file>
+
   <file path='model/educacao/relatorio/RelatorioHistoricoEscolarRetrato.model.php'>
     <operation>
       <search regex="true"><![CDATA[(\$.*escrever.*Disposicao2(.*\s*\n*)\})]]></search>
@@ -202,7 +210,12 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
   
 ]]>
       </add>
-    </operation>    
+    </operation>        
+    <operation>
+      <search regex="true"><![CDATA[(\$sTransferido.*\$aListaDeAlunos.*\$sDtEncerramento.*;)]]></search>
+      <add><![CDATA[$sTransferido = $auxSituacao . " {$sDtEncerramento}";]]>
+      </add>
+    </operation> 
   </file>
 
   <file path='edu2_guiatransferenciaencerrados002.php'>
