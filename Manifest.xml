@@ -8,9 +8,11 @@
 		
 		<!-- classe -->
 	    <file name="db_transferencialoteobservacao_classe.php"    path="/classes/db_transferencialoteobservacao_classe.php" />
+	    <file name="db_titulorelatorioalunoeleicao_classe.php"    path="/classes/db_titulorelatorioalunoeleicao_classe.php" />
 
 	    <!-- dd -->
 	    <file name="transferencialoteobservacao.dd.xml"    path="/dd/tabelas/plugins.transferencialoteobservacao.dd.xml" />
+	    <file name="titulorelatorioalunoeleicao.dd.xml"    path="/dd/tabelas/plugins.titulorelatorioalunoeleicao.dd.xml" />
    	</files>
    	<estrutura install="/instalacao.sql" uninstall="/desinstalacao.sql">
     </estrutura>

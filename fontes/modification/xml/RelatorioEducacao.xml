@@ -4,6 +4,70 @@
   <id>RelatorioEducacao</id>
   <ecidade-version>2.3.50</ecidade-version>
   
+
+
+  <file path='edu2_alunovotante001.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\&iTipoModelo.*,)]]></search>
+      <add>
+        <![CDATA[&iTipoModelo='+iTipoModelo+'&sTitulo='+sTitulo,]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(sDataVotacao.*datavotacao.value;)]]></search>
+      <add>
+        <![CDATA[
+  if (document.form1.titulo.value == 0) {
+    alert("Selecione um título");
+    return false;
+  }
+  
+  sTitulo      = document.form1.titulo.options[document.form1.titulo.selectedIndex].innerHTML;
+  sDataVotacao = document.form1.datavotacao.value;]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search regex="true"><![CDATA[(<table.*border.*0.*align.*left.*>)]]></search>
+      <add>
+        <![CDATA[<table border="0" align="left">
+    <tr>
+      <td>
+        <b>Selecione o Título:</b><br>
+        <select name="titulo">
+         <option value="0">Selecione</option>
+          <?
+            $oTituloRelatorio = db_utils::getDao("titulorelatorioalunoeleicao");
+            $rsTituloRelatorio = $oTituloRelatorio->sql_record($oTituloRelatorio->sql_query());
+
+            while ($row = pg_fetch_array($rsTituloRelatorio)) {
+             
+              $cod_titulo = $row["sequencial"];
+              $titulo     = $row["titulo"];
+              ?>
+              <option value="<?=$cod_titulo;?>"><?=$titulo;?></option>
+              <?
+            }
+          ?>
+        </select>
+      </td>
+      <td>
+      </td>
+    </tr>]]>
+      </add>
+    </operation>
+  </file>
+
+  <file path='edu2_alunovotante002.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\"ELEIÇÃO.*ESCOLAR)]]></search>
+      <add>
+        <![CDATA[utf8_decode($sTitulo)."]]>
+      </add>
+    </operation>
+  </file>
+
   <file path='edu2_resumoaprovnovo002.php'>
     <operation>
       <search regex="true"><![CDATA[(\$oDadosDis.*ResultadoFin.*\[0\].*\n.*\})]]></search>
@@ -80,6 +144,22 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       <add><![CDATA[$oDadoEtapa->nPercentualFalta = $oEtapaCursada->getPercentualFrequencia();]]>
       </add>
     </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(public.*montarEstruturaDeDados.*\{)]]></search>
+      <add><![CDATA[$1
+
+    $i = 0;]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$sIndex.*\$oEtapaCursada.*getCodigo.*;)]]></search>
+      <add><![CDATA[$sIndex .= "#{$oEtapaCursada->getEtapa()->getCodigo()}#{$i}";
+        $i++;]]>
+      </add>
+    </operation>    
+      
   </file>
 
   <file path='model/educacao/relatorio/RelatorioHistoricoEscolarRetrato.model.php'>
@@ -167,6 +247,53 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, empty($oDadosEtapa->nPercentualFalta) ? '-' : $oDadosEtapa->nPercentualFalta, 0, 0, empty($oDadosEtapa->nPercentualFalta) ? 'C' : $sAlinhamentoFreq);]]>
       </add>
     </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$oEtapaDiversificada.*\iCadDisciplina\].*\$oDisciplina.*;\s*.*\})]]></search>
+      <add><![CDATA[$1
+
+        foreach ($aGrade[$iPaginas]['comum'] as $oEtapa) {
+          if ($oEtapa->sEtapa == $oEtapaComum->sEtapa) {
+            $oEtapa->aDisciplinas[$oDisciplina->iCadDisciplina] = $oDisciplina;
+            $lContinue = true;
+          }
+        }]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$aGrade.*\$iPaginas.*comum.*\$oEtapaComum.*;)]]></search>
+      <add><![CDATA[if ($lContinue!=true) {
+        $aGrade[$iPaginas]['comum'][] = $oEtapaComum;
+      }]]>
+      </add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$lPossuiBaseDiversificada.*possuiBaseDiversificada.*;)]]></search>
+      <add><![CDATA[$1
+    $lContinue = false;]]>
+      </add>
+    </operation>   
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*\$aLargura.*etapa.*\$oDadosEtapa.*sEtapa.*;)]]></search>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['etapa'], $iAlturaLinha, $oDadosEtapa->sEtapa, 1, 0, 'C');]]>
+      </add>
+    </operation>   
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*\$iXInicial.*\$iLarguraTotal.*\$iYInicial\);)]]></search>
+      <add><![CDATA[$this->oPdf->Line( $this->oPdf->GetX(), $iYInicial, $iLarguraTotal, $iYInicial);]]>
+      </add>
+    </operation>   
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*\$iXInicial.*\$iLarguraTotal.*getY.*;)]]></search>
+      <add><![CDATA[$this->oPdf->Line( $this->oPdf->GetX(),     $this->oPdf->getY() , $iLarguraTotal, $this->oPdf->getY());]]>
+      </add>
+    </operation>   
+
   </file>
 
   <file path='forms/db_frmturma.php'>
