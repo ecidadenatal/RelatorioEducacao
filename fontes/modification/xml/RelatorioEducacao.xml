@@ -3,8 +3,6 @@
   <name>RelatorioEducacao</name>
   <id>RelatorioEducacao</id>
   <ecidade-version>2.3.50</ecidade-version>
-  
-
 
   <file path='edu2_alunovotante001.php'>
     <operation>
@@ -64,6 +62,47 @@
       <search regex="true"><![CDATA[(\"ELEI플O.*ESCOLAR)]]></search>
       <add>
         <![CDATA[utf8_decode($sTitulo)."]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(escolha Diretor Escolar")]]></search>
+      <add>
+        <![CDATA[escolha ".$sAssinatura]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iCount.*0;)]]></search>
+      <add>
+        <![CDATA[$iCount   = 0;
+
+$sAssinatura = (utf8_decode($sTitulo) == "ELEI플O DO CONSELHO ESCOLAR") ? "Conselho Escolar" : "Diretor Escolar";]]>
+      </add>
+    </operation>
+  </file>
+  
+  <file path='edu2_alunovotante003.php'>
+    <operation>
+      <search regex="true"><![CDATA[(\"ELEI플O.*ESCOLAR)]]></search>
+      <add>
+        <![CDATA[utf8_decode($sTitulo)."]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(escolha Diretor Escolar")]]></search>
+      <add>
+        <![CDATA[escolha ".$sAssinatura]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iCount.*0;)]]></search>
+      <add>
+        <![CDATA[$iCount   = 0;
+
+$sAssinatura = (utf8_decode($sTitulo) == "ELEI플O DO CONSELHO ESCOLAR") ? "Conselho Escolar" : "Diretor Escolar";]]>
       </add>
     </operation>
   </file>
@@ -163,6 +202,12 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
   </file>
 
   <file path='model/educacao/relatorio/RelatorioHistoricoEscolarRetrato.model.php'>
+
+    <operation>
+      <search regex="true"><![CDATA[('FREQ')]]></search>
+      <add><![CDATA['% FREQ']]></add>
+    </operation>    
+
     <operation>
       <search regex="true"><![CDATA[(\$.*escrever.*Disposicao2(.*\s*\n*)\})]]></search>
       <add><![CDATA[$1
@@ -226,25 +271,17 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
     <operation>
       <search regex="true"><![CDATA[(\$iXInicial.*GetX.*;)]]></search>
       <add><![CDATA[
-    $sAlinhamentoFreq = 'R';
     if ($oDadosEtapa->sResultado == "TR") {
       $oDadosEtapa->iCargaHoraria = "-";
       $oDadosEtapa->nPercentualFalta = "-";
       $oDadosEtapa->iDiasLetivos = "-";
-      $sAlinhamentoFreq = 'C';
     }]]>
       </add>
     </operation>
 
     <operation>
       <search regex="true"><![CDATA[(\$this.*\$aLargura.*percentual_frequencia.*'R'.*;)]]></search>
-      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, $oDadosEtapa->nPercentualFalta, 0, 0, $sAlinhamentoFreq);]]>
-      </add>
-    </operation>
-
-    <operation>
-      <search regex="true"><![CDATA[(\$this.*'percentual_frequencia'.*\$sAlinhamentoFreq.*;)]]></search>
-      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, empty($oDadosEtapa->nPercentualFalta) ? '-' : $oDadosEtapa->nPercentualFalta, 0, 0, empty($oDadosEtapa->nPercentualFalta) ? 'C' : $sAlinhamentoFreq);]]>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, $oDadosEtapa->nPercentualFalta, 0, 0, 'C');]]>
       </add>
     </operation>
 
@@ -499,4 +536,49 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       </add>
     </operation>   
   </file>
+
+  <file path='func_seriehist.php'>
+    <operation>
+      <search regex="true"><![CDATA[(ed11_i_sequencia.*<.*\$iOrdem.*\})]]></search>
+      <add><![CDATA[ed11_i_sequencia <= {$iOrdemEtapaAtual}]]></add>
+    </operation>    
+  </file>
+
+  <file path='mensagens/educacao/escola/HistoricoEscolar.json'>
+    <operation>
+      <search regex="true"><![CDATA[( igual.*ou )]]></search>
+      <add><![CDATA[ ]]></add>
+    </operation>    
+  </file>
+
+  <file path='scripts/classes/educacao/escola/HistoricoEscolar.classe.js'>
+    <operation>
+      <search regex="true"><![CDATA[(iOrdemEtapaAtual.*<=.*Selecionada)]]></search>
+      <add><![CDATA[iOrdemEtapaAtual < this.iOrdemEtapaSelecionada]]></add>
+    </operation>    
+  </file>
+
+  <file path='model/educacao/HistoricoEscolar.model.php'>
+    <operation>
+      <search regex="true"><![CDATA[(empty.*iDiasManutencaoHistorico.*\))]]></search>
+      <add><![CDATA[is_null($iDiasManutencaoHistorico))]]></add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iNumeroDiasTransf.*<=.*Historico.*\s.*IGUAIS;)]]></search>
+      <add><![CDATA[$iNumeroDiasTransferencia <= $iDiasManutencaoHistorico || $iDiasManutencaoHistorico == 0) {
+              return self::PERMITE_MANUTENCAO;]]></add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iAnoEtapa.*>=)]]></search>
+      <add><![CDATA[$iAnoEtapa >]]></add>
+    </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(getOrdem.*>=)]]></search>
+      <add><![CDATA[getOrdem() >]]></add>
+    </operation>    
+  </file>
+
 </modification>
