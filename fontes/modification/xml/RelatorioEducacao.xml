@@ -566,9 +566,15 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
 
     <operation>
       <search regex="true"><![CDATA[(\$iNumeroDiasTransf.*<=.*Historico.*\s.*IGUAIS;)]]></search>
-      <add><![CDATA[$iNumeroDiasTransferencia <= $iDiasManutencaoHistorico || $iDiasManutencaoHistorico == 0) {
+      <add><![CDATA[$iNumeroDiasTransferencia <= $iDiasManutencaoHistorico || $iDiasManutencaoHistorico === '0') {
               return self::PERMITE_MANUTENCAO;]]></add>
     </operation>    
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iNumeroDiasTransf.*<=.*Historico.*\s.*MENORES;)]]></search>
+      <add><![CDATA[$iNumeroDiasTransferencia <= $iDiasManutencaoHistorico || $iDiasManutencaoHistorico === '0') {
+              return self::PERMITE_MANUTENCAO;]]></add>
+    </operation>  
 
     <operation>
       <search regex="true"><![CDATA[(\$iAnoEtapa.*>=)]]></search>
