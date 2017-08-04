@@ -271,17 +271,25 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
     <operation>
       <search regex="true"><![CDATA[(\$iXInicial.*GetX.*;)]]></search>
       <add><![CDATA[
+    $sAlinhamentoFreq = 'R';
     if ($oDadosEtapa->sResultado == "TR") {
       $oDadosEtapa->iCargaHoraria = "-";
       $oDadosEtapa->nPercentualFalta = "-";
       $oDadosEtapa->iDiasLetivos = "-";
+      $sAlinhamentoFreq = 'C';
     }]]>
       </add>
     </operation>
 
     <operation>
       <search regex="true"><![CDATA[(\$this.*\$aLargura.*percentual_frequencia.*'R'.*;)]]></search>
-      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, $oDadosEtapa->nPercentualFalta, 0, 0, 'C');]]>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, $oDadosEtapa->nPercentualFalta, 0, 0, $sAlinhamentoFreq);]]>
+      </add>
+    </operation>
+
+    <operation>
+      <search regex="true"><![CDATA[(\$this.*'percentual_frequencia'.*\$sAlinhamentoFreq.*;)]]></search>
+      <add><![CDATA[$this->oPdf->Cell($aLargura['percentual_frequencia'], $iAlturaLinha, empty($oDadosEtapa->nPercentualFalta) ? '-' : $oDadosEtapa->nPercentualFalta, 0, 0, empty($oDadosEtapa->nPercentualFalta) ? 'C' : $sAlinhamentoFreq);]]>
       </add>
     </operation>
 
@@ -329,7 +337,44 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       <search regex="true"><![CDATA[(\$this.*\$iXInicial.*\$iLarguraTotal.*getY.*;)]]></search>
       <add><![CDATA[$this->oPdf->Line( $this->oPdf->GetX(),     $this->oPdf->getY() , $iLarguraTotal, $this->oPdf->getY());]]>
       </add>
+    </operation> 
+    
+    <operation>
+      <search regex="true"><![CDATA[(ion reorganizaEstrutura\(\)\s*\{)]]></search>
+      <add><![CDATA[$1
+    $aEtapasExistentes = array();]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search regex="true"><![CDATA[(\$oEtapaDiversificada->aDisciplinas\s*=\s*array\(\);)]]></search>
+      <add><![CDATA[$1
+      
+      $aEtapasExistentes[] = $oEtapaCursada->iEtapa;
+      ]]>
+      </add>
     </operation>   
+    
+    <operation>
+      <search regex="true"><![CDATA[(foreach\s*\(\$this->aEtapasPosterior\s*as\s*\$oEtapaPosterior\s*\)\s*{)]]></search>
+      <add><![CDATA[$1
+              
+        //verificacao se existe a etapa, caso exista, não adiciona a posterior
+        if (in_array($oEtapaPosterior->iEtapa,$aEtapasExistentes)) {
+            continue;
+        }
+
+      ]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search regex="true"><![CDATA[(foreach\s*\(\s*\$aDadosRelatorio\s*as\s*\$oDadosEtapa\s*\)\s*{)]]></search>
+      <add><![CDATA[$aEtapasExistentes = array();
+    $1
+      $aEtapasExistentes[] = $oDadosEtapa->iEtapa;]]>
+      </add>
+    </operation>                 
 
   </file>
 
