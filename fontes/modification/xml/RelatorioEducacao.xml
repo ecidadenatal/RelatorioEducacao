@@ -197,7 +197,96 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       <add><![CDATA[$sIndex .= "#{$oEtapaCursada->getEtapa()->getCodigo()}#{$i}";
         $i++;]]>
       </add>
-    </operation>    
+    </operation>
+    
+    <operation>
+      <search regex="true"><![CDATA[(protected\s*\$aEtapasPosterior\s*=.*;)]]></search>
+      <add><![CDATA[$1
+      
+  //inicio plugin HistoricoEscolarEstapasAnteriores
+  protected $aEtapasAnterior = array();
+  //fim plugin HistoricoEscolarEstapasAnteriores
+
+      ]]>
+      </add>
+    </operation>        
+    <operation>
+      <search regex="true"><![CDATA[(\$this->buscaEtapasPosteriores\s*\()]]></search>
+      <add><![CDATA[   
+       
+    //inicio plugin HistoricoEscolarEstapasAnteriores
+    $this->buscaEtapasAnteriores( $oUltimaEtapaHistoricoCursada );
+    //fim plugin HistoricoEscolarEstapasAnteriores
+    
+    $1]]>
+      </add>
+    </operation>
+    <operation>
+      <search regex="true"><![CDATA[(private\s*function\s*buscaEtapasPosteriores\s*\(\s*\$oUltimaEtapaHistoricoCursada\s*\)\s*\{)]]></search>
+      <add><![CDATA[
+
+  //inicio plugin HistoricoEscolarEstapasAnteriores
+  private function buscaEtapasAnteriores ( $oUltimaEtapaHistoricoCursada ) {
+  
+  	$lMatriculaValida = false;
+  	$oUltimaEtapa     = null;
+  
+  	if ( !empty($oUltimaEtapaHistoricoCursada) ) {
+  		$oUltimaEtapa = $oUltimaEtapaHistoricoCursada->getEtapa();
+  	}
+  
+  	$oUltimaMatricula = MatriculaRepository::getUltimaMatriculaAluno($this->oAluno);
+  	if (!empty($oUltimaMatricula) && $oUltimaMatricula->isAtiva() && !$oUltimaMatricula->isConcluida() &&
+  			$oUltimaMatricula->getSituacao() == 'MATRICULADO' ) {
+  
+  				$lMatriculaValida = true;
+  				$oUltimaEtapa     = $oUltimaMatricula->getEtapaDeOrigem();
+  			}
+  			if ( empty($oUltimaEtapa) ) {
+  				return;
+  			}
+  
+  			$aEtapasEnsino = EtapaRepository::getEtapasEnsino( $oUltimaEtapa->getEnsino() );
+  			foreach ($aEtapasEnsino as $oEtapaEnsino ) {
+  
+  				if ($oEtapaEnsino->getOrdem() >= $oUltimaEtapa->getOrdem()) {
+  				  continue;
+  				}
+  				
+  				$lContinue = false;
+  				foreach ($this->aDadosOrganizados as $oDadosExistentes) {
+  					echo $oEtapaEnsino->getCodigo()." == ".$oDadosExistentes->iEtapa."<br>";
+  					if ($oEtapaEnsino->getCodigo() == $oDadosExistentes->iEtapa) {
+  						$lContinue = true;
+  					}
+  				}
+  				if ($lContinue) {
+  					continue;
+  				}
+  
+  				$oDadoEtapa                    = new stdClass();
+  				$oDadoEtapa->iEtapa            = $oEtapaEnsino->getCodigo();
+  				$oDadoEtapa->sEtapa            = $oEtapaEnsino->getNome();
+  				$oDadoEtapa->sTurma           = '-';
+  				$oDadoEtapa->sEscola          = '-';
+  				$oDadoEtapa->sMunicipio       = '-';
+  				$oDadoEtapa->iAno             = '-';
+  				$oDadoEtapa->iDiasLetivos     = '-';
+  				$oDadoEtapa->iCargaHoraria    = '-';
+  				$oDadoEtapa->nPercentualFalta = '-';
+  				$oDadoEtapa->sResultado       = '-';
+  				$oDadoEtapa->sUF              = '-';
+  
+  				$this->aEtapasAnterior[$oDadoEtapa->iEtapa] = $oDadoEtapa;
+  			}
+  			
+  }
+  //fim plugin HistoricoEscolarEstapasAnteriores
+  
+  $1
+]]>
+      </add>
+    </operation>        
       
   </file>
 
@@ -375,6 +464,51 @@ function verificaAlunoRecuperacao ($iAluno, $iCodigoDiario){
       $aEtapasExistentes[] = $oDadosEtapa->iEtapa;]]>
       </add>
     </operation>                 
+
+    <operation>
+      <search regex="true"><![CDATA[(\$iPaginas\s*=\s*1;\n*.*\$iColunasImpressas\s*=\s*0;)]]></search>
+      <add><![CDATA[$1    
+    
+    //inicio plugin HistoricoEscolarEstapasAnteriores
+    if ($this->lExibirTodasEtapasCurso) {
+      foreach ($this->aEtapasAnterior as $oEtapaAnterior ) {
+      
+      	if ($iColunasImpressas == RelatorioHistoricoEscolarRetrato::NUMERO_ETAPAS_PAGINA) {
+      
+      		$iColunasImpressas = 0;
+      		$iPaginas ++;
+      	}
+      
+      	$iColunasImpressas ++;
+      	$aGrade[$iPaginas]['comum'][] = $oEtapaAnterior;
+      
+      	if ( $lPossuiBaseDiversificada ) {
+      		$aGrade[$iPaginas]['diversificada'][] = $oEtapaAnterior;
+      	}
+      }
+    }
+    //fim plugin HistoricoEscolarEstapasAnteriores 
+]]>
+      </add>
+    </operation>
+    
+    <operation>
+      <search regex="true"><![CDATA[(\$iLinhaPadrao\s*=\s*RelatorioHistoricoEscolarRetrato\:\:ALTURA_LINHA;)]]></search>
+      <add><![CDATA[$1    
+    
+    //inicio plugin HistoricoEscolarEstapasAnteriores
+    if ( $this->lExibirTodasEtapasCurso) {
+    
+    	foreach ($this->aEtapasAnterior as $oEtapaAnterior) {
+    
+    		$this->escreverResumoEtapas( $oEtapaAnterior );
+    	}
+    }
+    //fim plugin HistoricoEscolarEstapasAnteriores 
+    
+]]>
+      </add>
+    </operation>    
 
   </file>
 
